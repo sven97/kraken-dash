@@ -55,10 +55,10 @@ const Label = styled.div`
 const Value = styled.div`
   display: flex;
   align-items: baseline;
-  font-size: 2rem;
+  font-size: 1.7rem;
   font-weight: 700;
   color: ${colors.text};
-  width: 64px;
+  width: 50px;
   justify-content: flex-end;
 `;
 

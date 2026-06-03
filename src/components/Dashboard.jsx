@@ -27,11 +27,11 @@ export default function Dashboard({ data }) {
 
         <TempRow>
           <TempCol>
-            <RadialGauge label="CPU" value={cpu.temperature} max={100} size={150} />
+            <RadialGauge label="CPU" value={cpu.temperature} max={100} size={158} />
             <StatTile label="CPU FAN" value={cpu.fan || '—'} unit={cpu.fan ? 'rpm' : ''} />
           </TempCol>
           <TempCol>
-            <RadialGauge label="GPU" value={gpu.temperature} max={100} size={150} />
+            <RadialGauge label="GPU" value={gpu.temperature} max={100} size={158} />
             <StatTile label="GPU FAN" value={gpu.fan || '—'} unit={gpu.fan ? 'rpm' : ''} />
           </TempCol>
         </TempRow>
@@ -44,7 +44,7 @@ export default function Dashboard({ data }) {
         <PerfMid>
           <ChartBox>
             <ChartTitle>POWER (W)</ChartTitle>
-            <SplineAreaChart cpuWatts={data.cpuWatts} gpuWatts={data.gpuWatts} height={120} />
+            <SplineAreaChart cpuWatts={data.cpuWatts} gpuWatts={data.gpuWatts} height={124} />
             <Legend>
               <span style={{ color: colors.cpu }}>● CPU {cpu.power}W</span>
               <span style={{ color: colors.gpu }}>● GPU {gpu.power}W</span>
@@ -90,19 +90,23 @@ const Stage = styled.div`
   overflow: hidden;
 `;
 
-/* Inscribed-circle safe area: keep content away from clipped corners. */
+/* Circle-aware safe area: the middle band may run nearly full width (the circle is
+   widest at center); the top/bottom rows are kept narrow where the circle pinches in.
+   Small side padding lets the mid-band fill; per-section max-widths protect the ends. */
 const Safe = styled.div`
   position: absolute;
   inset: 0;
-  padding: 64px 96px;
+  padding: 26px 52px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 3px;
 `;
 
 const SectionLabel = styled.div`
-  font-size: 0.7rem;
-  letter-spacing: 0.32em;
+  font-size: 0.74rem;
+  letter-spacing: 0.34em;
   color: ${colors.textDim};
   text-transform: uppercase;
 `;
@@ -115,22 +119,24 @@ const LiquidHero = styled.div`
 `;
 
 const LiquidLabel = styled.div`
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   letter-spacing: 0.1em;
   color: ${colors.textDim};
 `;
 
 const LiquidTemp = styled.div`
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   font-weight: 700;
   line-height: 1.05;
 `;
 
+/* Spread the two gauges out toward the wide part of the circle. */
 const TempRow = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-top: -6px;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  width: 100%;
+  margin-top: -8px;
 `;
 
 const TempCol = styled.div`
@@ -141,18 +147,22 @@ const TempCol = styled.div`
 `;
 
 const Divider = styled.div`
-  width: 78%;
+  width: 92%;
   height: 1px;
-  margin: 8px 0;
-  background: linear-gradient(90deg, transparent, ${colors.divider} 20%, ${colors.divider} 80%, transparent);
+  margin: 6px 0;
+  background: linear-gradient(90deg, transparent, ${colors.divider} 12%, ${colors.divider} 88%, transparent);
 `;
 
+/* Widest band — sits at the circle's center line, so it uses nearly the full width.
+   A small right inset keeps the lower load value off the arc (the bars sit below
+   center, where the circle has begun to narrow). */
 const PerfMid = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 22px;
   width: 100%;
   margin-top: 2px;
+  padding-right: 20px;
 `;
 
 const ChartBox = styled.div`
@@ -184,11 +194,12 @@ const Bars = styled.div`
   min-width: 0;
 `;
 
+/* Bottom row sits where the circle narrows again — keep it centered and bounded. */
 const Footer = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 28px;
-  margin-top: auto;
+  justify-content: space-evenly;
+  width: 100%;
+  max-width: 440px;
 `;
 
 const SimBadge = styled.div`

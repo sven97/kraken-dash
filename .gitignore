@@ -12,8 +12,8 @@ dist
 dist-ssr
 *.local
 
-# Local preview screenshot
-preview.png
+# Local preview screenshots
+preview*.png
 
 # Editor directories and files
 .vscode/*
