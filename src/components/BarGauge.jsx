@@ -1,69 +1,68 @@
 import styled from 'styled-components';
 import { colors, loadColor } from '../theme';
 
-// Horizontal load bar with label and big percent readout.
-export default function BarGauge({ label, value = 0, accent }) {
+// Load bar with a combined title line: name + load% + a gray "actual" value
+// (e.g. "CPU  16%            4.82GHz"). The bar fill visualizes the load%.
+export default function BarGauge({ label, value = 0, accent, detail }) {
   const fill = accent ?? loadColor(value);
   return (
-    <Row>
-      <Left>
-        <Track>
-          <Fill style={{ width: `${Math.min(100, value)}%`, background: fill }} />
-        </Track>
-        <Label>{label}</Label>
-      </Left>
-      <Value>
-        {Math.round(value)}
-        <Unit>%</Unit>
-      </Value>
-    </Row>
+    <Wrap>
+      <TitleRow>
+        <Name>{label}</Name>
+        <Pct>{Math.round(value)}%</Pct>
+        {detail && <Detail>{detail}</Detail>}
+      </TitleRow>
+      <Track>
+        <Fill style={{ width: `${Math.min(100, value)}%`, background: fill }} />
+      </Track>
+    </Wrap>
   );
 }
 
-const Row = styled.div`
+const Wrap = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
 `;
 
-const Left = styled.div`
-  flex: 1;
-  min-width: 0;
+const TitleRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+`;
+
+const Name = styled.span`
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: ${colors.text};
+`;
+
+const Pct = styled.span`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: ${colors.text};
+  font-variant-numeric: tabular-nums;
+`;
+
+// Gray actual value, pushed to the right so the values line up into a column.
+const Detail = styled.span`
+  margin-left: auto;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: ${colors.textDim};
+  font-variant-numeric: tabular-nums;
 `;
 
 const Track = styled.div`
-  height: 18px;
-  border-radius: 4px;
+  height: 20px;
+  border-radius: 5px;
   background: ${colors.track};
   overflow: hidden;
 `;
 
 const Fill = styled.div`
   height: 100%;
-  border-radius: 4px;
+  border-radius: 5px;
   transition: width 0.4s ease, background 0.4s ease;
-`;
-
-const Label = styled.div`
-  margin-top: 4px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: ${colors.text};
-`;
-
-const Value = styled.div`
-  display: flex;
-  align-items: baseline;
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: ${colors.text};
-  width: 50px;
-  justify-content: flex-end;
-`;
-
-const Unit = styled.span`
-  font-size: 0.8rem;
-  color: ${colors.textDim};
-  margin-left: 2px;
 `;
