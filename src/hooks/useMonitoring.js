@@ -44,14 +44,19 @@ export default function useMonitoring() {
   const ref = useRef(initialState); // latest value, to roll histories without stale closures
 
   useEffect(() => {
+    let simId = null;
+
     const apply = (next) => {
       ref.current = next;
       setState(next);
     };
 
-    const live = !!window.nzxt?.v1;
-
-    const onUpdate = (data) => {
+    const handle = (data, source) => {
+      // Real CAM data wins: once it arrives, stop the simulation for good.
+      if (source === 'cam' && simId) {
+        clearInterval(simId);
+        simId = null;
+      }
       const prev = ref.current;
       const cpu = (data?.cpus ?? []).at(-1) ?? {};
       const gpu = pickGpu(data?.gpus) ?? {};
@@ -66,7 +71,7 @@ export default function useMonitoring() {
       const max = prev.liquid.max == null ? liquidTemp : Math.max(prev.liquid.max, liquidTemp);
 
       apply({
-        source: live ? 'cam' : 'sim',
+        source,
         shape: window.nzxt?.v1?.shape ?? 'circle',
         cpu: {
           name: cpu.name ?? '',
@@ -105,19 +110,34 @@ export default function useMonitoring() {
       });
     };
 
-    // Real CAM path: register the callback CAM invokes once per second.
-    if (window.nzxt?.v1) {
-      window.nzxt.v1.onMonitoringDataUpdate = onUpdate;
-      return () => {
-        if (window.nzxt?.v1) window.nzxt.v1.onMonitoringDataUpdate = undefined;
-      };
+    // ALWAYS register the CAM callback. CAM may inject window.nzxt.v1 before or after
+    // this runs, so we (re)build the structure ourselves, preserving any values CAM set,
+    // and hand it our callback. CAM's data pump then finds onMonitoringDataUpdate.
+    const camDefaults = window.nzxt?.v1;
+    window.nzxt = {
+      ...window.nzxt,
+      v1: {
+        width: camDefaults?.width ?? 640,
+        height: camDefaults?.height ?? 640,
+        shape: camDefaults?.shape ?? 'circle',
+        targetFps: camDefaults?.targetFps ?? 1,
+        onMonitoringDataUpdate: (data) => handle(data, 'cam'),
+      },
+    };
+
+    // Run simulation ONLY when we're not embedded on the Kraken.
+    // CAM appends ?kraken=1 to the integration URL — that's the reliable "on device" signal.
+    const onKraken = new URLSearchParams(window.location.search).has('kraken');
+    if (!onKraken) {
+      const sim = makeSimulator();
+      handle(buildSimData(sim), 'sim'); // immediate first frame
+      simId = setInterval(() => handle(buildSimData(sim), 'sim'), 1000);
     }
 
-    // Desktop / GitHub Pages preview: animate plausible data so the dashboard is alive.
-    const sim = makeSimulator();
-    const id = setInterval(() => onUpdateSim(onUpdate, sim), 1000);
-    onUpdateSim(onUpdate, sim); // immediate first frame
-    return () => clearInterval(id);
+    return () => {
+      if (simId) clearInterval(simId);
+      if (window.nzxt?.v1) window.nzxt.v1.onMonitoringDataUpdate = undefined;
+    };
   }, []);
 
   return state;
@@ -133,7 +153,8 @@ function drift(value, target, rate) {
   return value + (target - value) * rate + (Math.random() - 0.5) * 0.04;
 }
 
-function onUpdateSim(onUpdate, s) {
+// Advance the simulator one tick and return a CAM-shaped MonitoringData object.
+function buildSimData(s) {
   s.t += 1;
   // Occasionally retarget loads to mimic bursts of activity.
   if (s.t % 6 === 0) s.cpuLoad = Math.random() * 0.8 + 0.1;
@@ -145,7 +166,7 @@ function onUpdateSim(onUpdate, s) {
   const gpuTemp = 40 + s.gpuLoad * 40;
   s.liquid = drift(s.liquid, 26 + (cpuTemp + gpuTemp) / 20, 0.1);
 
-  const data = {
+  return {
     cpus: [
       {
         name: 'AMD Ryzen 7 9800X3D',
@@ -177,9 +198,6 @@ function onUpdateSim(onUpdate, s) {
     },
     kraken: { liquidTemperature: s.liquid },
   };
-
-  // Tag source as 'sim' by routing through the same handler then overriding.
-  onUpdate(data);
 }
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
