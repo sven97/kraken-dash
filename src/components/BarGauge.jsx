@@ -55,14 +55,14 @@ const Detail = styled.span`
 `;
 
 const Track = styled.div`
-  height: 20px;
-  border-radius: 5px;
+  height: 24px;
+  border-radius: 6px;
   background: ${colors.track};
   overflow: hidden;
 `;
 
 const Fill = styled.div`
   height: 100%;
-  border-radius: 5px;
+  border-radius: 6px;
   transition: width 0.4s ease, background 0.4s ease;
 `;

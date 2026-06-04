@@ -61,15 +61,15 @@ const Overlay = styled.div`
 const Label = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 1rem;
+  gap: 7px;
+  font-size: 1.2rem;
   font-weight: 700;
   color: ${colors.text};
   line-height: 1;
 `;
 
 const Value = styled.div`
-  font-size: 2.1rem;
+  font-size: 2.7rem;
   font-weight: 700;
   color: ${colors.text};
   line-height: 1.05;

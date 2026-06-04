@@ -1,16 +1,15 @@
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDroplet, faMicrochip, faDisplay, faBolt } from '@fortawesome/free-solid-svg-icons';
-import { SCREEN, colors, tempColor } from '../theme';
+import { faMicrochip, faDisplay, faBolt } from '@fortawesome/free-solid-svg-icons';
+import { SCREEN, colors } from '../theme';
 import RadialGauge from './RadialGauge';
 import BarGauge from './BarGauge';
 import SplineAreaChart from './SplineAreaChart';
-import Sparkline from './Sparkline';
 
-// Circular dashboard: cooling temps (top) over performance (bottom), no section
-// chrome. Everything critical is kept inside the inscribed circle of the 640px panel.
+// Circular dashboard: large CPU/GPU temperature gauges (top) over performance
+// (bottom). Everything critical is kept inside the inscribed circle of the 640px panel.
 export default function Dashboard({ data }) {
-  const { cpu, gpu, ram, liquid } = data;
+  const { cpu, gpu, ram } = data;
 
   const ghz = (mhz) => (mhz ? (mhz / 1000).toFixed(2) : '0.00');
   const cpuDetail = `${ghz(cpu.frequency)} GHz`;
@@ -20,17 +19,7 @@ export default function Dashboard({ data }) {
   return (
     <Stage $round={data.shape === 'circle'}>
       <Safe>
-        {/* ---------- COOLING (temperatures) ---------- */}
-        <LiquidHero>
-          <LiquidLabel>
-            <FontAwesomeIcon icon={faDroplet} style={{ color: colors.liquid }} /> LIQUID
-          </LiquidLabel>
-          <LiquidTemp style={{ color: tempColor(liquid.temperature) }}>
-            {liquid.temperature}°C
-          </LiquidTemp>
-          <Sparkline history={liquid.history} min={liquid.min} max={liquid.max} />
-        </LiquidHero>
-
+        {/* ---------- TOP: CPU / GPU temperature gauges ---------- */}
         <TempRow>
           <RadialGauge
             label="CPU"
@@ -38,7 +27,7 @@ export default function Dashboard({ data }) {
             iconColor={colors.cpu}
             value={cpu.temperature}
             max={100}
-            size={186}
+            size={264}
           />
           <RadialGauge
             label="GPU"
@@ -46,30 +35,28 @@ export default function Dashboard({ data }) {
             iconColor={colors.gpu}
             value={gpu.temperature}
             max={100}
-            size={186}
+            size={264}
           />
         </TempRow>
 
-        <Divider />
+        {/* ---------- MIDDLE: load bars across the wide center ---------- */}
+        <Bars>
+          <BarGauge label="CPU" value={cpu.load} accent={colors.cpu} detail={cpuDetail} />
+          <BarGauge label="GPU" value={gpu.load} accent={colors.gpu} detail={gpuDetail} />
+          <BarGauge label="RAM" value={ram.percent} accent={colors.ram} detail={ramDetail} />
+        </Bars>
 
-        {/* ---------- PERFORMANCE ---------- */}
-        <PerfMid>
-          <ChartBox>
-            <ChartTitle>
-              <FontAwesomeIcon icon={faBolt} /> POWER (W)
-            </ChartTitle>
-            <SplineAreaChart cpuWatts={data.cpuWatts} gpuWatts={data.gpuWatts} height={138} />
+        {/* ---------- BOTTOM: power chart, centered + narrow for the arc ---------- */}
+        <ChartBox>
+          <ChartTitle>
+            <FontAwesomeIcon icon={faBolt} /> POWER (W)
             <Legend>
-              <span style={{ color: colors.cpu }}>● CPU {cpu.power}W</span>
-              <span style={{ color: colors.gpu }}>● GPU {gpu.power}W</span>
+              <span style={{ color: colors.cpu }}>● {cpu.power}W</span>
+              <span style={{ color: colors.gpu }}>● {gpu.power}W</span>
             </Legend>
-          </ChartBox>
-          <Bars>
-            <BarGauge label="CPU" value={cpu.load} accent={colors.cpu} detail={cpuDetail} />
-            <BarGauge label="GPU" value={gpu.load} accent={colors.gpu} detail={gpuDetail} />
-            <BarGauge label="RAM" value={ram.percent} accent={colors.ram} detail={ramDetail} />
-          </Bars>
-        </PerfMid>
+          </ChartTitle>
+          <SplineAreaChart cpuWatts={data.cpuWatts} gpuWatts={data.gpuWatts} height={120} />
+        </ChartBox>
       </Safe>
 
       {data.source === 'sim' && <SimBadge>SIM</SimBadge>}
@@ -90,90 +77,59 @@ const Stage = styled.div`
 /* Circle-aware safe area: the middle band may run nearly full width (the circle is
    widest at center); the top/bottom rows are kept narrow where the circle pinches in.
    Small side padding lets the mid-band fill; per-section max-widths protect the ends. */
+/* Three bands distributed top -> middle -> bottom to fill the round screen:
+   gauges (top), load bars (wide middle), power chart (narrow centered bottom). */
 const Safe = styled.div`
   position: absolute;
   inset: 0;
-  padding: 26px 52px;
+  padding: 14px 48px 42px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
+  justify-content: space-between;
 `;
 
-const LiquidHero = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2px;
-`;
-
-const LiquidLabel = styled.div`
-  font-size: 0.9rem;
-  letter-spacing: 0.1em;
-  color: ${colors.textDim};
-`;
-
-const LiquidTemp = styled.div`
-  font-size: 2.4rem;
-  font-weight: 700;
-  line-height: 1.05;
-`;
-
-/* Spread the two gauges out toward the wide part of the circle. */
+/* Two large gauges with normal spacing; arcs reach toward the top of the circle. */
 const TempRow = styled.div`
   display: flex;
-  justify-content: space-evenly;
-  align-items: flex-start;
-  width: 100%;
-  margin-top: -8px;
-`;
-
-const Divider = styled.div`
-  width: 92%;
-  height: 1px;
-  margin: 6px 0;
-  background: linear-gradient(90deg, transparent, ${colors.divider} 12%, ${colors.divider} 88%, transparent);
-`;
-
-/* Performance band sits below the circle's center line, where the arc narrows again,
-   so the right side is inset to keep the lowest bar (RAM) clear of the bottom-right arc. */
-const PerfMid = styled.div`
-  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 20px;
+  gap: 4px;
   width: 100%;
-  margin-top: 2px;
-  padding-right: 46px;
 `;
 
+/* Load bars run across the wide center band. */
+const Bars = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding: 0 6px;
+`;
+
+/* Power chart sits at the bottom, full width. It's a rolling chart, so it's fine for
+   its corners to extend past the arc — only scrolling fill gets clipped there. */
 const ChartBox = styled.div`
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  padding: 0 6px;
 `;
 
 const ChartTitle = styled.div`
-  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
   letter-spacing: 0.08em;
   color: ${colors.textDim};
 `;
 
 const Legend = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  margin-top: -6px;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 0.74rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-`;
-
-const Bars = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-width: 0;
 `;
 
 const SimBadge = styled.div`
