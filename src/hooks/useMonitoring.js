@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Number of samples kept for the rolling charts/sparklines.
+// Number of samples kept for the rolling power chart.
 const HISTORY = 60;
 
 // 0..1 load -> rounded 0..100 percent.
@@ -18,10 +18,9 @@ const emptyHistory = () => Array.from({ length: HISTORY }, () => 0);
 const initialState = {
   source: 'init', // 'cam' | 'sim' | 'init'
   shape: 'square',
-  cpu: { name: '', load: 0, temperature: 0, frequency: 0, boostPct: null, fan: 0, power: 0, cores: null, threads: null },
-  gpu: { name: '', load: 0, temperature: 0, frequency: 0, fan: 0, power: 0 },
-  ram: { inUseGb: 0, totalGb: 0, percent: 0, kind: '', frequency: 0 },
-  liquid: { temperature: 0, min: null, max: null, history: emptyHistory() },
+  cpu: { load: 0, temperature: 0, frequency: 0, power: 0 },
+  gpu: { load: 0, temperature: 0, frequency: 0, power: 0 },
+  ram: { inUseGb: 0, totalGb: 0, percent: 0 },
   cpuWatts: emptyHistory(),
   gpuWatts: emptyHistory(),
 };
@@ -31,12 +30,6 @@ function pickGpu(gpus = []) {
   if (!gpus.length) return undefined;
   const discrete = gpus.find((g) => !/(graphics|integrated|igpu)/i.test(g?.name ?? ''));
   return discrete ?? gpus[gpus.length - 1];
-}
-
-// Boost over stock frequency, as a percentage (null if not derivable).
-function boost(freq, stock) {
-  if (!freq || !stock) return null;
-  return Number((((freq - stock) / stock) * 100).toFixed(0));
 }
 
 export default function useMonitoring() {
@@ -61,52 +54,37 @@ export default function useMonitoring() {
       const cpu = (data?.cpus ?? []).at(-1) ?? {};
       const gpu = pickGpu(data?.gpus) ?? {};
       const ram = data?.ram ?? {};
-      const liquidTemp = data?.kraken?.liquidTemperature ?? 0;
-      const ramModule = (ram?.modules ?? [])[0] ?? {};
 
       const totalGb = ram?.totalSize ? ram.totalSize / 1024 : 0;
       const inUseGb = ram?.inUse ? ram.inUse / 1024 : 0;
-
-      const min = prev.liquid.min == null ? liquidTemp : Math.min(prev.liquid.min, liquidTemp);
-      const max = prev.liquid.max == null ? liquidTemp : Math.max(prev.liquid.max, liquidTemp);
+      const cpuW = Math.round(cpu.power ?? 0);
+      const gpuW = Math.round(gpu.power ?? 0);
+      // On the very first frame, fill the history so the chart shows a full line at once
+      // (instead of a flat zero line that takes ~60s to populate).
+      const first = prev.source === 'init';
 
       apply({
         source,
         shape: window.nzxt?.v1?.shape ?? 'circle',
         cpu: {
-          name: cpu.name ?? '',
           load: pct(cpu.load),
           temperature: Math.round(cpu.temperature ?? 0),
           frequency: Math.round(cpu.frequency ?? 0),
-          boostPct: boost(cpu.frequency, cpu.stockFrequency),
-          fan: Math.round(cpu.fanSpeed ?? 0),
           power: Math.round(cpu.power ?? 0),
-          cores: cpu.numCores ?? null,
-          threads: cpu.numThreads ?? null,
         },
         gpu: {
-          name: gpu.name ?? '',
           load: pct(gpu.load),
           temperature: Math.round(gpu.temperature ?? 0),
           frequency: Math.round(gpu.frequency ?? 0),
-          fan: Math.round(gpu.fanSpeed ?? 0),
           power: Math.round(gpu.power ?? 0),
         },
         ram: {
           inUseGb,
           totalGb,
           percent: totalGb ? Math.round((inUseGb / totalGb) * 100) : 0,
-          kind: ramModule.kind ?? '',
-          frequency: Math.round(ramModule.frequency ?? 0),
         },
-        liquid: {
-          temperature: Math.round(liquidTemp),
-          min: Math.round(min),
-          max: Math.round(max),
-          history: roll(prev.liquid.history, liquidTemp),
-        },
-        cpuWatts: roll(prev.cpuWatts, Math.round(cpu.power ?? 0)),
-        gpuWatts: roll(prev.gpuWatts, Math.round(gpu.power ?? 0)),
+        cpuWatts: first ? Array(HISTORY).fill(cpuW) : roll(prev.cpuWatts, cpuW),
+        gpuWatts: first ? Array(HISTORY).fill(gpuW) : roll(prev.gpuWatts, gpuW),
       });
     };
 
@@ -146,7 +124,7 @@ export default function useMonitoring() {
 // --- Simulation -----------------------------------------------------------
 
 function makeSimulator() {
-  return { t: 0, cpuLoad: 0.3, gpuLoad: 0.2, liquid: 28 };
+  return { t: 0, cpuLoad: 0.3, gpuLoad: 0.2 };
 }
 
 function drift(value, target, rate) {
@@ -164,39 +142,29 @@ function buildSimData(s) {
 
   const cpuTemp = 42 + s.cpuLoad * 38;
   const gpuTemp = 40 + s.gpuLoad * 40;
-  s.liquid = drift(s.liquid, 26 + (cpuTemp + gpuTemp) / 20, 0.1);
 
   return {
     cpus: [
       {
-        name: 'AMD Ryzen 7 9800X3D',
         load: s.cpuLoad,
         temperature: cpuTemp,
         frequency: 4700 + s.cpuLoad * 700,
-        stockFrequency: 4700,
-        fanSpeed: 600 + s.cpuLoad * 900,
         power: 30 + s.cpuLoad * 90,
-        numCores: 8,
-        numThreads: 16,
       },
     ],
     gpus: [
       {
-        name: 'NVIDIA GeForce RTX',
+        name: 'NVIDIA GeForce RTX', // name lets pickGpu skip integrated GPUs
         load: s.gpuLoad,
         temperature: gpuTemp,
         frequency: 300 + s.gpuLoad * 2200,
-        stockFrequency: 2200,
-        fanSpeed: s.gpuLoad > 0.3 ? 900 + s.gpuLoad * 800 : 0,
         power: 20 + s.gpuLoad * 280,
       },
     ],
     ram: {
       totalSize: 32 * 1024,
       inUse: (12 + s.cpuLoad * 8) * 1024,
-      modules: [{ kind: 'DDR5', frequency: 6000 }],
     },
-    kraken: { liquidTemperature: s.liquid },
   };
 }
 

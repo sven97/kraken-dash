@@ -1,10 +1,10 @@
 import styled from 'styled-components';
-import { colors, loadColor } from '../theme';
+import { colors, type } from '../theme';
 
-// Load bar. Title line shows name + the gray "actual" value (e.g. "CPU   4.82 GHz");
-// the bar fill visualizes the load, with the big load% to the right of the bar.
-export default function BarGauge({ label, value = 0, accent, detail }) {
-  const fill = accent ?? loadColor(value);
+// Load bar (vertical-stacked). Title shows name + the gray actual value (e.g. "CPU  4.9 GHz");
+// a flat crimson fill visualizes the load, with the big load% to the right.
+export default function BarGauge({ label, value = 0, detail }) {
+  const v = Math.min(100, Math.max(0, value));
   return (
     <Row>
       <Left>
@@ -13,7 +13,7 @@ export default function BarGauge({ label, value = 0, accent, detail }) {
           {detail && <Detail>{detail}</Detail>}
         </TitleRow>
         <Track>
-          <Fill style={{ width: `${Math.min(100, value)}%`, background: fill }} />
+          <Fill style={{ width: `${v}%` }} />
         </Track>
       </Left>
       <Pct>
@@ -36,7 +36,7 @@ const Left = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 `;
 
 const TitleRow = styled.div`
@@ -46,30 +46,34 @@ const TitleRow = styled.div`
 `;
 
 const Name = styled.span`
-  font-size: 1.45rem;
-  font-weight: 700;
+  font-size: ${type.label.size};
+  font-weight: ${type.label.weight};
   color: ${colors.text};
 `;
 
-// Gray actual value, right-aligned in the title row.
 const Detail = styled.span`
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: ${type.detail.size};
+  font-weight: ${type.detail.weight};
   color: ${colors.textDim};
   font-variant-numeric: tabular-nums;
 `;
 
+// Recessed silver groove.
 const Track = styled.div`
-  height: 11px;
+  height: 12px;
   border-radius: 999px;
   background: ${colors.track};
+  box-shadow: inset 0 1px 2px rgba(70, 80, 100, 0.28);
   overflow: hidden;
 `;
 
+// Flat crimson fill, rounded ends.
 const Fill = styled.div`
   height: 100%;
   border-radius: 999px;
-  transition: width 0.4s ease, background 0.4s ease;
+  background: ${colors.accent};
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: width 0.4s ease;
 `;
 
 // Big load% to the right of the bar.
@@ -77,16 +81,16 @@ const Pct = styled.div`
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
-  width: 84px;
-  font-size: 2.65rem;
-  font-weight: 800;
+  width: 102px;
+  font-size: ${type.value.size};
+  font-weight: ${type.value.weight};
   color: ${colors.text};
   font-variant-numeric: tabular-nums;
 `;
 
 const PctUnit = styled.span`
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: ${type.unit.size};
+  font-weight: ${type.unit.weight};
   color: ${colors.textDim};
   margin-left: 2px;
 `;

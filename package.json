@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/chakra-petch": "^5.2.7",
     "apexcharts": "^5.13.0",
     "react": "^19.2.6",
     "react-apexcharts": "^2.1.0",
