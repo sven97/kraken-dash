@@ -1,12 +1,11 @@
 import Chart from 'react-apexcharts';
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { tempColor, colors } from '../theme';
 
 // Temperature radial gauge: a top half-arc (like the aviation reference) with the
 // label + big value overlaid in the lower-center. We render the text ourselves
 // rather than via ApexCharts dataLabels for reliable positioning on a half-arc.
-export default function RadialGauge({ label, value = 0, max = 100, size = 150, icon, iconColor }) {
+export default function RadialGauge({ label, value = 0, max = 100, size = 150 }) {
   const fill = tempColor(value);
 
   const options = {
@@ -31,10 +30,7 @@ export default function RadialGauge({ label, value = 0, max = 100, size = 150, i
     <Wrap style={{ width: size, height: size * 0.66 }}>
       <Chart options={options} series={series} type="radialBar" height={size} width={size} />
       <Overlay>
-        <Label>
-          {icon && <FontAwesomeIcon icon={icon} style={{ color: iconColor ?? colors.textDim }} />}
-          {label}
-        </Label>
+        <Label>{label}</Label>
         <Value>{Math.round(value)}°</Value>
       </Overlay>
     </Wrap>

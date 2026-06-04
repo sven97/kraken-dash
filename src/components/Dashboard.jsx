@@ -1,6 +1,4 @@
 import styled from 'styled-components';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMicrochip, faDisplay, faBolt } from '@fortawesome/free-solid-svg-icons';
 import { SCREEN, colors } from '../theme';
 import RadialGauge from './RadialGauge';
 import BarGauge from './BarGauge';
@@ -21,41 +19,26 @@ export default function Dashboard({ data }) {
       <Safe>
         {/* ---------- TOP: CPU / GPU temperature gauges ---------- */}
         <TempRow>
-          <RadialGauge
-            label="CPU"
-            icon={faMicrochip}
-            iconColor={colors.cpu}
-            value={cpu.temperature}
-            max={100}
-            size={228}
-          />
-          <RadialGauge
-            label="GPU"
-            icon={faDisplay}
-            iconColor={colors.gpu}
-            value={gpu.temperature}
-            max={100}
-            size={228}
-          />
+          <RadialGauge label="CPU" value={cpu.temperature} max={100} size={248} />
+          <RadialGauge label="GPU" value={gpu.temperature} max={100} size={248} />
         </TempRow>
 
-        {/* ---------- MIDDLE: load bars across the wide center ---------- */}
-        <Bars>
-          <BarGauge label="CPU" value={cpu.load} accent={colors.cpu} detail={cpuDetail} />
-          <BarGauge label="GPU" value={gpu.load} accent={colors.gpu} detail={gpuDetail} />
-          <BarGauge label="RAM" value={ram.percent} accent={colors.ram} detail={ramDetail} />
-        </Bars>
+        {/* ---------- MIDDLE: load bars (evenly spaced with the rows below) ---------- */}
+        <BarGauge label="CPU" value={cpu.load} accent={colors.cpu} detail={cpuDetail} />
+        <BarGauge label="GPU" value={gpu.load} accent={colors.gpu} detail={gpuDetail} />
+        <BarGauge label="RAM" value={ram.percent} accent={colors.ram} detail={ramDetail} />
 
-        {/* ---------- BOTTOM: power chart, centered + narrow for the arc ---------- */}
+        {/* ---------- BOTTOM: power title + chart ---------- */}
         <ChartBox>
           <ChartTitle>
-            <FontAwesomeIcon icon={faBolt} /> POWER (W)
+            <PowerName>POWER</PowerName>
+            <PowerUnit>(W)</PowerUnit>
             <Legend>
               <span style={{ color: colors.cpu }}>● {cpu.power}W</span>
               <span style={{ color: colors.gpu }}>● {gpu.power}W</span>
             </Legend>
           </ChartTitle>
-          <SplineAreaChart cpuWatts={data.cpuWatts} gpuWatts={data.gpuWatts} height={120} />
+          <SplineAreaChart cpuWatts={data.cpuWatts} gpuWatts={data.gpuWatts} height={160} />
         </ChartBox>
       </Safe>
 
@@ -82,7 +65,7 @@ const Stage = styled.div`
 const Safe = styled.div`
   position: absolute;
   inset: 0;
-  padding: 30px 48px 42px;
+  padding: 30px 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -98,28 +81,37 @@ const TempRow = styled.div`
   width: 100%;
 `;
 
-/* Load bars run across the wide center band. */
-const Bars = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  width: 100%;
-  padding: 0 6px;
-`;
-
-/* Power chart sits at the bottom, full width. It's a rolling chart, so it's fine for
-   its corners to extend past the arc — only scrolling fill gets clipped there. */
+/* Power title + chart at the bottom, full width. It's a rolling chart, so it's fine
+   for its corners to extend past the arc — only scrolling fill gets clipped there. */
 const ChartBox = styled.div`
   width: 100%;
-  padding: 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  /* The load bars' big % numbers make their row boxes taller, so space-between leaves
+     a tighter visual gap before this block — nudge it down to match the inter-bar gaps. */
+  margin-top: 10px;
 `;
 
+/* Title styled to match the load-bar titles above: white bold label + gray unit. */
 const ChartTitle = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+`;
+
+const PowerName = styled.span`
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1rem;
-  letter-spacing: 0.06em;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: ${colors.text};
+`;
+
+const PowerUnit = styled.span`
+  font-size: 1.25rem;
+  font-weight: 600;
   color: ${colors.textDim};
 `;
 
@@ -127,7 +119,7 @@ const Legend = styled.div`
   display: flex;
   gap: 14px;
   margin-left: auto;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 `;
