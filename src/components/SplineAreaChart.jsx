@@ -33,10 +33,10 @@ export default function SplineAreaChart({ cpuWatts = [], gpuWatts = [], height =
     theme: { mode: 'light' },
     colors: [colors.cpu, colors.gpu],
     dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2.5 },
+    stroke: { curve: 'smooth', width: 3.5 },
     fill: {
       type: 'gradient',
-      gradient: { opacityFrom: 0.32, opacityTo: 0.02, shadeIntensity: 1 },
+      gradient: { opacityFrom: 0.5, opacityTo: 0.08, shadeIntensity: 1 },
     },
     grid: { show: false, padding: { top: 0, right: 0, bottom: 0, left: 0 } },
     tooltip: { enabled: false },

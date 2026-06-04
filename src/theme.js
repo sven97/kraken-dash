@@ -16,10 +16,10 @@ export const colors = {
 // Shared type scale — used across gauges, tiles, and the power label so every
 // label / hero value / unit / detail is sized and weighted consistently.
 export const type = {
-  value: { size: '2.8rem', weight: 800 }, // hero numbers: temp °, load %
-  label: { size: '1.25rem', weight: 700 }, // CPU / GPU / RAM / POWER
-  unit: { size: '1.05rem', weight: 700 }, // °, %, W
-  detail: { size: '1.15rem', weight: 600 }, // GHz / GB
+  value: { size: '3.2rem', weight: 800 }, // hero numbers: temp °, load %
+  label: { size: '1.45rem', weight: 700 }, // CPU / GPU / RAM / POWER
+  unit: { size: '1.3rem', weight: 700 }, // °, %, W
+  detail: { size: '1.3rem', weight: 600 }, // GHz / GB
 };
 
 // Faint grayscale film-grain (inline SVG) for a brushed/metal surface texture.

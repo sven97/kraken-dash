@@ -27,7 +27,7 @@ export default function BarGauge({ label, value = 0, detail }) {
 const Row = styled.div`
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
 `;
 
@@ -36,7 +36,7 @@ const Left = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const TitleRow = styled.div`

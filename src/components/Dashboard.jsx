@@ -62,8 +62,8 @@ const Stage = styled.div`
 
   background-image:
     ${noise},
-    radial-gradient(115% 80% at 26% 8%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 52%),
-    radial-gradient(130% 120% at 50% 4%, #ffffff 0%, #eceef3 50%, #d6dbe4 100%);
+    radial-gradient(115% 80% at 26% 8%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 52%),
+    radial-gradient(130% 120% at 50% 4%, #eef1f5 0%, #dde2e9 52%, #c7cdd8 100%);
   background-size: 180px 180px, cover, cover;
   box-shadow:
     inset 0 2px 2px rgba(255, 255, 255, 0.85),
@@ -95,12 +95,12 @@ const Grid = styled.div`
 const Safe = styled.div`
   position: absolute;
   inset: 0;
-  padding: 30px 50px 30px;
+  padding: 24px 48px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 16px;
+  gap: 9px;
 `;
 
 /* Two large gauges with normal spacing; arcs reach toward the top of the circle. */

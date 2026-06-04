@@ -13,7 +13,7 @@ export default function RadialGauge({ label, value = 0, max = 100, size = 150 })
       radialBar: {
         startAngle: -90,
         endAngle: 90,
-        hollow: { size: '78%' },
+        hollow: { size: '70%' },
         track: { background: colors.track, strokeWidth: '100%' },
         dataLabels: { show: false },
       },
