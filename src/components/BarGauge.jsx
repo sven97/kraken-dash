@@ -33,14 +33,14 @@ const TitleRow = styled.div`
 `;
 
 const Name = styled.span`
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: ${colors.text};
 `;
 
 const Pct = styled.span`
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 800;
   color: ${colors.text};
   font-variant-numeric: tabular-nums;
 `;
@@ -48,21 +48,21 @@ const Pct = styled.span`
 // Gray actual value, pushed to the right so the values line up into a column.
 const Detail = styled.span`
   margin-left: auto;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: ${colors.textDim};
   font-variant-numeric: tabular-nums;
 `;
 
 const Track = styled.div`
-  height: 24px;
-  border-radius: 6px;
+  height: 9px;
+  border-radius: 999px;
   background: ${colors.track};
   overflow: hidden;
 `;
 
 const Fill = styled.div`
   height: 100%;
-  border-radius: 6px;
+  border-radius: 999px;
   transition: width 0.4s ease, background 0.4s ease;
 `;

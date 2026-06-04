@@ -15,7 +15,7 @@ export default function RadialGauge({ label, value = 0, max = 100, size = 150, i
       radialBar: {
         startAngle: -90,
         endAngle: 90,
-        hollow: { size: '60%' },
+        hollow: { size: '78%' },
         track: { background: colors.track, strokeWidth: '100%' },
         dataLabels: { show: false },
       },
@@ -61,16 +61,16 @@ const Overlay = styled.div`
 const Label = styled.div`
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 1.2rem;
+  gap: 8px;
+  font-size: 1.45rem;
   font-weight: 700;
   color: ${colors.text};
   line-height: 1;
 `;
 
 const Value = styled.div`
-  font-size: 2.7rem;
-  font-weight: 700;
+  font-size: 3.4rem;
+  font-weight: 800;
   color: ${colors.text};
   line-height: 1.05;
 `;

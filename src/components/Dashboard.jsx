@@ -27,7 +27,7 @@ export default function Dashboard({ data }) {
             iconColor={colors.cpu}
             value={cpu.temperature}
             max={100}
-            size={264}
+            size={228}
           />
           <RadialGauge
             label="GPU"
@@ -35,7 +35,7 @@ export default function Dashboard({ data }) {
             iconColor={colors.gpu}
             value={gpu.temperature}
             max={100}
-            size={264}
+            size={228}
           />
         </TempRow>
 
@@ -82,7 +82,7 @@ const Stage = styled.div`
 const Safe = styled.div`
   position: absolute;
   inset: 0;
-  padding: 14px 48px 42px;
+  padding: 30px 48px 42px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -118,16 +118,16 @@ const ChartTitle = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.74rem;
-  letter-spacing: 0.08em;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
   color: ${colors.textDim};
 `;
 
 const Legend = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 14px;
   margin-left: auto;
-  font-size: 0.74rem;
+  font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 `;
